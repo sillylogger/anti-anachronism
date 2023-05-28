@@ -1,0 +1,4 @@
+data/*.csv
+credentials.json
+token.yaml
+vcr_cassettes
