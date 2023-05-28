@@ -4,7 +4,5 @@ Terminal::Table::Style.defaults = {
   :border_x       => "-",
   :border_y       => "|",
   :border_i       => "|",
-
-  :alignment      => :right,
 }
 

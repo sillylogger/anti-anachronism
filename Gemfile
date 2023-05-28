@@ -4,6 +4,7 @@ gem 'activesupport'
 gem 'awesome_print'
 gem 'byebug'
 gem 'logging'
+gem 'time_difference'
 
 gem 'terminal-table'
 gem 'vcr'
