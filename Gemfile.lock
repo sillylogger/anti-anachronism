@@ -51,6 +51,10 @@ GEM
     i18n (1.13.0)
       concurrent-ruby (~> 1.0)
     jwt (2.7.0)
+    little-plugger (1.1.4)
+    logging (2.3.1)
+      little-plugger (~> 1.1)
+      multi_json (~> 1.14)
     memoist (0.16.2)
     mini_mime (1.1.2)
     minitest (5.18.0)
@@ -93,6 +97,7 @@ DEPENDENCIES
   byebug
   google-api-client
   googleauth
+  logging
   terminal-table
   vcr
   webmock

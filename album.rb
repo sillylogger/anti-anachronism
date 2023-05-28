@@ -39,7 +39,7 @@ class Album < OpenStruct # (:id, :title, :productUrl, :mediaItemsCount)
     request['Content-type'] = 'application/json'
     request['Authorization'] = GoogleAPI.authorization_header 
 
-    puts "http.request #{request.uri}"
+    $log.debug "http.request #{request.uri}"
     response = http.request(request)
     return unless response.code == '200'
 

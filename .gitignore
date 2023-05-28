@@ -1,4 +1,7 @@
 data/*.csv
+log
+
 credentials.json
 token.yaml
+
 vcr_cassettes
