@@ -8,7 +8,9 @@ GEM
       tzinfo (~> 2.0)
     addressable (2.8.4)
       public_suffix (>= 2.0.2, < 6.0)
+    ansi (1.5.0)
     awesome_print (1.9.2)
+    builder (3.2.4)
     byebug (11.1.3)
     concurrent-ruby (1.2.2)
     crack (0.4.5)
@@ -58,6 +60,11 @@ GEM
     memoist (0.16.2)
     mini_mime (1.1.2)
     minitest (5.18.0)
+    minitest-reporters (1.6.0)
+      ansi
+      builder
+      minitest (>= 5.0)
+      ruby-progressbar
     multi_json (1.15.0)
     os (1.1.4)
     public_suffix (5.0.1)
@@ -67,6 +74,7 @@ GEM
       uber (< 0.2.0)
     retriable (3.1.2)
     rexml (3.2.5)
+    ruby-progressbar (1.13.0)
     ruby2_keywords (0.0.5)
     signet (0.17.0)
       addressable (~> 2.8)
@@ -100,6 +108,8 @@ DEPENDENCIES
   google-api-client
   googleauth
   logging
+  minitest
+  minitest-reporters
   terminal-table
   time_difference
   vcr
