@@ -20,7 +20,8 @@ require_relative 'lib/vcr'
 
 require_relative 'data/csv_database'
 
-require_relative 'google_api'
 require_relative 'album'
+require_relative 'filename'
+require_relative 'google_api'
 require_relative 'photo'
 

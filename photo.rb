@@ -39,14 +39,7 @@ class Photo < OpenStruct
   end
 
   def date_from_filename
-    string = creationTime_from_filename
-    return nil if string.nil?
-
-    Time.find_zone("Jakarta").parse(string).to_datetime
-  rescue Exception => e
-    $log.error e.message
-    $log.error self
-    return nil
+    @date_from_filename ||= Filename.new(filename).time
   end
 
   def diff?
@@ -63,33 +56,6 @@ class Photo < OpenStruct
   def diff
     return nil if date_from_google.nil? || date_from_filename.nil?
     TimeDifference.between(date_from_google, date_from_filename).humanize
-  end
-
-  def creationTime_from_filename
-    matchers = [
-      /(?:Screen Shot )?(\d{4}-\d{2}-\d{2} at \d{1,2}\.\d{2}\.\d{2})(?:-\d+)?.(?:png)/i,
-      /(?:WhatsApp Image )?(\d{4}-\d{2}-\d{2} at \d{1,2}\.\d{2}\.\d{2} (?:PM|AM))(?:-\d+)?.(?:png|jpeg)/i,
-      /(\d{4}-\d{2}-\d{2} \d{1,2}\.\d{2}\.\d{2})(?:-\d+|-Pano)?.(?:jpg|png|mp4|dng)/i,
-      /IMG_(\d{8}_\d{6}).jpg/i,
-      /IMG-(\d{8})-WA\d+.jpe?g/i,
-      /IMG-(\d{8})-wa\d+.jpe?g/i,
-      /(\d{8}_\d{6})(?:[_-]\d+)?.(?:mp4|heic|jpg)/i,
-      /(\d{8}_\d{6})(?:_\d+)?.(?:mp4|heic)/i,
-      /(\d{8}_\d{6})_HDR.jpg/i,
-      /(\d{8}_\d{6}).jpg/i,
-      /(\d{8})-DSC_\d{4}.jpg/i,
-      /(\d{4}-\d{2}-\d{2})(?:-\d+).jpg/i,
-      # /(\d{10})-(?:\d+).jpg/i,
-    ]
-
-    matchers.each do |matcher|
-      if match = matcher.match(filename)
-        $log.debug "Filename: #{filename} with #{matcher} results in #{match[1]}"
-        return match[1]
-      end
-    end
-
-    return nil
   end
 
   private

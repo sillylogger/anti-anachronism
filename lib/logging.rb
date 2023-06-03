@@ -15,7 +15,7 @@ require 'logging'
 # V3++
 
 Logging.format_as :inspect
-Logging.backtrace false
+Logging.backtrace true
 
 Logging.color_scheme('bright',
   :levels => {
