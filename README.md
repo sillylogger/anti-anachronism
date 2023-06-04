@@ -28,3 +28,14 @@ Still sorting things out now.. 😅
 
 #### Stats
 
+Goofy signature...
+    Time.at(seconds, microseconds, :microsecond) → time
+
+    now = DateTime.current
+    string = now.strftime("%s%6N")
+    parsed = Time.at 0, string.to_i, :microsecond
+    now.to_s == parsed.to_datetime.to_s
+
+
+Lookout for conflicts:
+    eyes_v01.95 (DESKTOP-C2QNT8D's conflicted copy 2023-02-07).jpg
