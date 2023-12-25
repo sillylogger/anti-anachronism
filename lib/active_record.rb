@@ -20,6 +20,10 @@ module ActiveRecord
       all.first
     end
 
+    def find_by_id id
+      all.find{|r| r.id == id }
+    end
+
   end
 
   included do
