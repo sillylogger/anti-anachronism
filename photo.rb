@@ -49,10 +49,10 @@ class Photo < OpenStruct
     return nil
   end
 
-  def diff?
+  def diff? hours = 7
     @diff ||= if date_from_filename.nil?
       false
-    elsif TimeDifference.between(date_from_google, date_from_filename).in_hours > 7
+    elsif TimeDifference.between(date_from_google, date_from_filename).in_hours > hours
       true
     else
       false
@@ -73,10 +73,10 @@ class Photo < OpenStruct
       /IMG_(\d{8}_\d{6}).jpg/i,
       /IMG-(\d{8})-WA\d+.jpe?g/i,
       /IMG-(\d{8})-wa\d+.jpe?g/i,
-      /(\d{8}_\d{6})(?:[_-]\d+)?.(?:mp4|heic|jpg)/i,
-      /(\d{8}_\d{6})(?:_\d+)?.(?:mp4|heic)/i,
-      /(\d{8}_\d{6})_HDR.jpg/i,
-      /(\d{8}_\d{6}).jpg/i,
+      /([12]\d{7}_\d{6})(?:[_-]\d+)?.(?:mp4|heic|jpg)/i,
+      /([12]\d{7}_\d{6})(?:_\d+)?.(?:mp4|heic)/i,
+      /([12]\d{7}_\d{6})_HDR.jpg/i,
+      /([12]\d{7}_\d{6}).jpg/i,
       /(\d{8})-DSC_\d{4}.jpg/i,
       /(\d{4}-\d{2}-\d{2})(?:-\d+).jpg/i,
       # /(\d{10})-(?:\d+).jpg/i,
@@ -95,7 +95,7 @@ class Photo < OpenStruct
   private
 
   def method_missing(meth, *args)
-    raise Exception, "no #{meth} member set yet" unless meth.to_s.end_with?('=')
+    # raise Exception, "no #{meth} member set yet" unless meth.to_s.end_with?('=')
     super
   end
 
@@ -111,7 +111,7 @@ class Photo < OpenStruct
 
     request = Net::HTTP::Get.new(uri)
     request['Content-type'] = 'application/json'
-    request['Authorization'] = GoogleAPI.authorization_header 
+    request['Authorization'] = GoogleAPI::Read.authorization_header 
 
     $log.debug "http.request #{request.uri}"
     response = http.request(request)

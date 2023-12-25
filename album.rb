@@ -37,7 +37,7 @@ class Album < OpenStruct # (:id, :title, :productUrl, :mediaItemsCount)
 
     request = Net::HTTP::Get.new(uri)
     request['Content-type'] = 'application/json'
-    request['Authorization'] = GoogleAPI.authorization_header 
+    request['Authorization'] = GoogleAPI::Read.authorization_header 
 
     $log.debug "http.request #{request.uri}"
     response = http.request(request)

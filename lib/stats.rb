@@ -24,7 +24,7 @@ module Stats
     )
     table.align_column 0, :left
 
-    $log.info "\n" + table.to_s
+    $log.info "\n" + table.to_s + "\n"
   end
 
 end
