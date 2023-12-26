@@ -12,10 +12,19 @@ class CSVDatabase
         csv << row.values
       end
     end
+  end
 
-  rescue Exception => e
-    debugger
-    puts "oh shit"
+  def self.read path, klass
+    return unless File.exist?(path)
+
+    csv = CSV.open path, 'rb', headers: true, encoding: "UTF-8"
+
+    csv.each_with_index do |row, index|
+      # break if index >= 10
+
+      model = klass.from_csv row
+      model.save
+    end
   end
 
 end

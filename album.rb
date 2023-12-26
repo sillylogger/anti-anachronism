@@ -19,6 +19,12 @@ class Album < OpenStruct # (:id, :title, :productUrl, :mediaItemsCount)
     Album.all
   end
 
+  def self.from_csv row
+    data = row.to_h.slice 'id', 'title', 'productUrl', 'mediaItemsCount'
+    album = Album.new data
+    album
+  end
+
   def csv
     table.deep_slice(:id, :title, :productUrl, :mediaItemsCount)
   end
@@ -37,7 +43,7 @@ class Album < OpenStruct # (:id, :title, :productUrl, :mediaItemsCount)
 
     request = Net::HTTP::Get.new(uri)
     request['Content-type'] = 'application/json'
-    request['Authorization'] = GoogleAPI::Read.authorization_header 
+    request['Authorization'] = GoogleAPI::Read.authorization_header
 
     $log.debug "http.request #{request.uri}"
     response = http.request(request)

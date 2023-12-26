@@ -19,6 +19,12 @@ class Photo < OpenStruct
     Photo.all
   end
 
+  def self.from_csv row
+    data = row.to_h.slice 'id', 'mimeType', 'filename', 'creationTime', 'cameraMake', 'cameraModel'
+    photo = Photo.new data
+    photo
+  end
+
   def csv
     table.deep_slice(:id, :mimeType, :filename, 'creationTime', 'cameraMake', 'cameraModel')
   end
