@@ -2,6 +2,7 @@ class Album < OpenStruct # (:id, :title, :productUrl, :mediaItemsCount)
   include ActiveRecord
 
   ALBUMS_MAX_PAGE_SIZE = 50
+  ATTRIBUTES = ['id', 'title', 'productUrl', 'mediaItemsCount', 'coverPhotoMediaItemId']
 
   def self.fetch_all
     pageToken = nil
@@ -9,8 +10,8 @@ class Album < OpenStruct # (:id, :title, :productUrl, :mediaItemsCount)
     VCR.use_cassette("albums-fetch", :record => :new_episodes) do
       loop do
         albums_in_json, pageToken = fetch pageToken
-        albums_in_json.each do |album_in_json|
-          Album.new(album_in_json).save
+        albums_in_json.each do |data|
+          Album.from_json(data).save
         end
         break if pageToken.nil?
       end
@@ -19,14 +20,18 @@ class Album < OpenStruct # (:id, :title, :productUrl, :mediaItemsCount)
     Album.all
   end
 
-  def self.from_csv row
-    data = row.to_h.slice 'id', 'title', 'productUrl', 'mediaItemsCount'
-    album = Album.new data
-    album
+  def self.from_json object
+    data = object.slice(*ATTRIBUTES)
+    Album.new(data)
   end
 
-  def csv
-    table.deep_slice(:id, :title, :productUrl, :mediaItemsCount)
+  def self.from_csv row
+    data = row.to_h.slice(*ATTRIBUTES)
+    Album.new(data)
+  end
+
+  def to_csv
+    ATTRIBUTES.map{|key| self.send(key) }
   end
 
   private

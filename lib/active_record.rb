@@ -4,31 +4,34 @@ module ActiveRecord
   extend ActiveSupport::Concern
 
   class_methods do
-    def all
-      @all ||= []
+
+    def table
+      @table ||= {}
     end
 
-    def all= all
-      @all = all
+    def all
+      @table.values
     end
 
     def count
-      all.size
+      @table.values.size
     end
 
     def first
-      all.first
+      @table.values.first
     end
 
     def find_by_id id
-      all.find{|r| r.id == id }
+      # all.find{|r| r.id == id }
+      @table[id]
     end
 
   end
 
   included do
+
     def save
-      self.class.all << self
+      self.class.table[self.id] = self
     end
   end
 

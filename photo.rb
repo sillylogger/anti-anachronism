@@ -2,6 +2,7 @@ class Photo < OpenStruct
   include ActiveRecord
 
   ITEMS_MAX_PAGE_SIZE = 100
+  ATTRIBUTES = ['id', 'mimeType', 'filename', 'creationTime', 'cameraMake', 'cameraModel']
 
   def self.fetch_all
     pageToken = nil
@@ -9,8 +10,8 @@ class Photo < OpenStruct
     VCR.use_cassette("mediaItems-fetch", :record => :new_episodes) do
       loop do
         items_in_json, pageToken = fetch pageToken
-        items_in_json.each do |item_in_json|
-          Photo.new(item_in_json).save
+        items_in_json.each do |data|
+          Photo.from_json(data).save
         end
         break if pageToken.nil? # || all.size > 100
       end
@@ -19,22 +20,51 @@ class Photo < OpenStruct
     Photo.all
   end
 
-  def self.from_csv row
-    data = row.to_h.slice 'id', 'mimeType', 'filename', 'creationTime', 'cameraMake', 'cameraModel'
-    photo = Photo.new data
-    photo
+  def self.from_json object
+    #
+    # This works, but I prefer to be explicit in digging into mediaMetaData.photo.cameraMake
+    #   data = object.deep_slice(*ATTRIBUTES)
+    #
+
+    data = object.slice('id', 'productUrl', 'mimeType', 'filename')
+
+    data['creationTime'] = object.dig('mediaMetadata', 'creationTime')
+
+    if object.dig('mediaMetadata', 'photo', 'cameraMake').present?
+      data['cameraMake'] = object.dig('mediaMetadata', 'photo', 'cameraMake')
+    end
+
+    if object.dig('mediaMetadata', 'photo', 'cameraModel').present?
+      data['cameraModel'] = object.dig('mediaMetadata', 'photo', 'cameraModel')
+    end
+
+    Photo.new(data)
   end
 
-  def csv
-    table.deep_slice(:id, :mimeType, :filename, 'creationTime', 'cameraMake', 'cameraModel')
+  def self.from_csv row
+    data = row.to_h.slice(*ATTRIBUTES)
+    Photo.new(data)
+  end
+
+  def to_csv
+    #
+    # This table is the OpenStruct table... it doesn't have an "attributes" method
+    # This doesn't work because missing attributes aren't populated, we need to make them nil
+    #   data = table.deep_slice(*ATTRIBUTES.map(&:to_sym))
+    #
+    ATTRIBUTES.map{|key| self.send(key) }
+  end
+
+  def productUrl 
+    "https://photos.google.com/lr/photo/#{id}"
   end
 
   def inspect
     clarification = "<Photo"
-    methods(false).grep_v(/=$/).each do |method|
+    methods(false).grep_v(/=$/).sort.each do |method|
       result = send(method)
       result = JSON.pretty_generate(result) if result.is_a? Hash
-      clarification << "\n#{method}=#{result}"
+      clarification << "\n\t#{method}=#{result}"
     end
     clarification << ">"
   end
@@ -117,7 +147,7 @@ class Photo < OpenStruct
 
     request = Net::HTTP::Get.new(uri)
     request['Content-type'] = 'application/json'
-    request['Authorization'] = GoogleAPI::Read.authorization_header 
+    request['Authorization'] = GoogleAPI::Read.authorization_header
 
     $log.debug "http.request #{request.uri}"
     response = http.request(request)
