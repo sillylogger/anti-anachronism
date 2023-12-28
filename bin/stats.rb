@@ -19,9 +19,8 @@ table.align_column 0, :right
 $log.info "\n" + table.to_s + "\n"
 
 
-hours = 7
-photos_with_diff = Photo.all.select{|p| p.diff?(hours) }
-$log.info "There are #{photos_with_diff.size} photos with a filename vs metadata diff over #{hours} hours:"
+photos_with_diff = Photo.all.select{|p| p.diff_in_hours.present? && p.diff_in_hours.abs > 7 }
+$log.info "There are #{photos_with_diff.size} photos with a filename vs metadata diff over 7 hours:"
 
 stats = Hash.new{|h, k| h[k] = Hash.new(0) }
 photos_with_diff.each{|p|

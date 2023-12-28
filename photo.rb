@@ -3,7 +3,7 @@ class Photo < OpenStruct
 
   ITEMS_MAX_PAGE_SIZE = 100
 
-  CSV_HEADERS = ['id', 'filename', 'mimeType', 'cameraMake', 'cameraModel', 'creationTime', 'creationTimeFromFilename']
+  CSV_HEADERS = ['id', 'filename', 'mimeType', 'cameraMake', 'cameraModel', 'creationTime', 'creationTimeFromFilename', 'diffInHours']
 
   def self.fetch_all
     pageToken = nil
@@ -44,7 +44,7 @@ class Photo < OpenStruct
   end
 
   def to_csv
-    [ id, filename, mime_type, camera_make, camera_model, creation_time, creation_time_from_filename ]
+    [ id, filename, mime_type, camera_make, camera_model, creation_time, creation_time_from_filename, diff_in_hours ]
   end
 
   def url
@@ -77,20 +77,9 @@ class Photo < OpenStruct
     return nil
   end
 
-  def diff? hours = 7
-    @diff ||= if creation_time_from_filename.nil?
-      false
-    elsif TimeDifference.between(creation_time, creation_time_from_filename).in_hours > hours
-      true
-    else
-      false
-    end
-
-  end
-
-  def diff
+  def diff_in_hours
     return nil if creation_time.nil? || creation_time_from_filename.nil?
-    TimeDifference.between(creation_time, creation_time_from_filename).humanize
+    @diff_in_hours ||= TimeDifference.between(creation_time, creation_time_from_filename).in_hours
   end
 
   def creation_time_from_filename_raw

@@ -4,17 +4,22 @@ require_relative File.join('..', 'setup')
 
 if false
   Album.fetch_all
-  CSVDatabase.create './data/albums.csv', Album
+  CSVDatabase.create './data/albums.csv', Album::CSV_HEADERS, Album.all
 
   Photo.fetch_all
-  CSVDatabase.create './data/photos.csv', Photo
+  CSVDatabase.create './data/photos.csv', Photo::CSV_HEADERS, Photo.all
 else
   CSVDatabase.read './data/albums.csv', Album
   CSVDatabase.read './data/photos.csv', Photo
 end
 
-debugger
-puts "check that fetching, writing to csv, then reading from csv produce the same objects"
-puts "waste a ton of time doing that... 😒"
-puts "move on to update! 👊"
+photos_by_diff = Photo.all.select{|p| 
+  p.diff_in_hours.present?
+}.sort_by{|p|
+  p.diff_in_hours
+}.reverse
 
+photos_that_need_fixing = photos_by_diff.slice(0 .. 1000)
+CSVDatabase.create  './photos-that-need-fixing.csv',
+                    Photo::CSV_HEADERS,
+                    photos_that_need_fixing

@@ -2,12 +2,12 @@ require 'csv'
 
 class CSVDatabase
 
-  def self.create path, klass
+  def self.create path, headers, data
     FileUtils.rm(path) if File.exist?(path)
 
     CSV.open(path, 'wb') do |csv|
-      csv << klass::CSV_HEADERS
-      klass.all.each do |model|
+      csv << headers
+      data.each do |model|
         csv << model.to_csv
       end
     end
