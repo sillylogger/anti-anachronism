@@ -5,11 +5,16 @@ module GoogleAPI
   class Write
     include Singleton
 
-    def self.authorization_header
+    attr_accessor :client
+
+    def initialize
       @client = GoogleAPI::Client.new(:write)
-      @client.authorize
+      @client.authorize!
       @client.refresh!
-      "Bearer #{@client.access_token}"
+    end
+
+    def self.authorization_header
+      "Bearer #{instance.client.access_token}"
     end
   end
 end

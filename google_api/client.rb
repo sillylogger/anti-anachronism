@@ -17,8 +17,7 @@ module GoogleAPI
       },
       write: {
         token_path: 'token-write.yaml',
-        scope: 'https://www.googleapis.com/auth/photoslibrary'
-                                               #photoslibrary.edit.appcreateddata
+        scope: 'https://www.googleapis.com/auth/photoslibrary.edit.appcreateddata'
       }
     }
 
