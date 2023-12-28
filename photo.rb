@@ -2,7 +2,8 @@ class Photo < OpenStruct
   include ActiveRecord
 
   ITEMS_MAX_PAGE_SIZE = 100
-  ATTRIBUTES = ['id', 'mimeType', 'filename', 'creationTime', 'cameraMake', 'cameraModel']
+
+  CSV_HEADERS = ['id', 'filename', 'mimeType', 'cameraMake', 'cameraModel', 'creationTime', 'creationTimeFromFilename']
 
   def self.fetch_all
     pageToken = nil
@@ -21,41 +22,32 @@ class Photo < OpenStruct
   end
 
   def self.from_json object
-    #
-    # This works, but I prefer to be explicit in digging into mediaMetaData.photo.cameraMake
-    #   data = object.deep_slice(*ATTRIBUTES)
-    #
-
-    data = object.slice('id', 'productUrl', 'mimeType', 'filename')
-
-    data['creationTime'] = object.dig('mediaMetadata', 'creationTime')
-
-    if object.dig('mediaMetadata', 'photo', 'cameraMake').present?
-      data['cameraMake'] = object.dig('mediaMetadata', 'photo', 'cameraMake')
-    end
-
-    if object.dig('mediaMetadata', 'photo', 'cameraModel').present?
-      data['cameraModel'] = object.dig('mediaMetadata', 'photo', 'cameraModel')
-    end
-
-    Photo.new(data)
+    Photo.new({
+      id:           object.fetch('id'),
+      filename:     object.fetch('filename'),
+      mime_type:    object.fetch('mimeType'),
+      camera_make:  object.dig('mediaMetadata', 'photo', 'cameraMake'),
+      camera_model: object.dig('mediaMetadata', 'photo', 'cameraModel'),
+      creation_time_raw:  object.dig('mediaMetadata', 'creationTime')
+    })
   end
 
   def self.from_csv row
-    data = row.to_h.slice(*ATTRIBUTES)
-    Photo.new(data)
+    Photo.new({
+      id:           row.fetch('id'),
+      filename:     row.fetch('filename'),
+      mime_type:    row.fetch('mimeType'),
+      camera_make:  row.fetch('cameraMake'),
+      camera_model: row.fetch('cameraModel'),
+      creation_time_raw:  row.fetch('creationTime')
+    })
   end
 
   def to_csv
-    #
-    # This table is the OpenStruct table... it doesn't have an "attributes" method
-    # This doesn't work because missing attributes aren't populated, we need to make them nil
-    #   data = table.deep_slice(*ATTRIBUTES.map(&:to_sym))
-    #
-    ATTRIBUTES.map{|key| self.send(key) }
+    [ id, filename, mime_type, camera_make, camera_model, creation_time, creation_time_from_filename ]
   end
 
-  def productUrl 
+  def url
     "https://photos.google.com/lr/photo/#{id}"
   end
 
@@ -69,13 +61,13 @@ class Photo < OpenStruct
     clarification << ">"
   end
 
-  def date_from_google
-    string = mediaMetadata.fetch('creationTime')
+  def creation_time
+    string = creation_time_raw
     DateTime.parse string
   end
 
-  def date_from_filename
-    string = creationTime_from_filename
+  def creation_time_from_filename
+    string = creation_time_from_filename_raw
     return nil if string.nil?
 
     Time.find_zone("Jakarta").parse(string).to_datetime
@@ -86,9 +78,9 @@ class Photo < OpenStruct
   end
 
   def diff? hours = 7
-    @diff ||= if date_from_filename.nil?
+    @diff ||= if creation_time_from_filename.nil?
       false
-    elsif TimeDifference.between(date_from_google, date_from_filename).in_hours > hours
+    elsif TimeDifference.between(creation_time, creation_time_from_filename).in_hours > hours
       true
     else
       false
@@ -97,11 +89,11 @@ class Photo < OpenStruct
   end
 
   def diff
-    return nil if date_from_google.nil? || date_from_filename.nil?
-    TimeDifference.between(date_from_google, date_from_filename).humanize
+    return nil if creation_time.nil? || creation_time_from_filename.nil?
+    TimeDifference.between(creation_time, creation_time_from_filename).humanize
   end
 
-  def creationTime_from_filename
+  def creation_time_from_filename_raw
     matchers = [
       /(?:Screen Shot )?(\d{4}-\d{2}-\d{2} at \d{1,2}\.\d{2}\.\d{2})(?:-\d+)?.(?:png)/i,
       /(?:WhatsApp Image )?(\d{4}-\d{2}-\d{2} at \d{1,2}\.\d{2}\.\d{2} (?:PM|AM))(?:-\d+)?.(?:png|jpeg)/i,

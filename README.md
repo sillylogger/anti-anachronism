@@ -14,7 +14,7 @@ Simply:
 - [x] Pull all your albums and photos down from Google Photos
 - [x] Write the metadata to a CSV, upload to Google Sheets: [here](https://docs.google.com/spreadsheets/d/1KJ3bmt1csh_zfdnxMHveVQKlVgu0Ww78XuhaeFWAg0I/edit#gid=1936910659)
 - [x] Fix the mediaMetadata of one photo on Google Photos via console => **🤦 not possible** per [issue tracker](https://issuetracker.google.com/issues?q=status:open%20componentid:385336%20edit)
-- [ ] Write a bunch of regular expressions to compare creationTime with a DateTime from the filename
-      Need to match the most specific regex first, otherwise truncating information like the time part of the filename
-- [ ] Add the DateTime from filename to the CSV and fix a few via Google Sheets
+- [ ] Add the DateTime from filename to the CSV
+- [ ] Check the DateTime from filename and see that you need specs because a bunch are wrong
+- [ ] Write specs for the DateTime from filename, match the most specific regex first, otherwise truncating information like the time part of the filename
 

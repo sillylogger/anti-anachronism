@@ -6,7 +6,7 @@ class CSVDatabase
     FileUtils.rm(path) if File.exist?(path)
 
     CSV.open(path, 'wb') do |csv|
-      csv << klass::ATTRIBUTES
+      csv << klass::CSV_HEADERS
       klass.all.each do |model|
         csv << model.to_csv
       end

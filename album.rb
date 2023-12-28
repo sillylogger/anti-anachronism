@@ -2,7 +2,7 @@ class Album < OpenStruct # (:id, :title, :productUrl, :mediaItemsCount)
   include ActiveRecord
 
   ALBUMS_MAX_PAGE_SIZE = 50
-  ATTRIBUTES = ['id', 'title', 'productUrl', 'mediaItemsCount', 'coverPhotoMediaItemId']
+  CSV_HEADERS = ['id', 'title', 'mediaItemsCount', 'coverPhotoMediaItemId']
 
   def self.fetch_all
     pageToken = nil
@@ -21,17 +21,29 @@ class Album < OpenStruct # (:id, :title, :productUrl, :mediaItemsCount)
   end
 
   def self.from_json object
-    data = object.slice(*ATTRIBUTES)
-    Album.new(data)
+    Album.new({
+      id:     object.fetch('id'),
+      title:  object.fetch('title'),
+      media_items_count:          object.fetch('mediaItemsCount'),
+      cover_photo_media_item_id:  object.fetch('coverPhotoMediaItemId')
+    })
   end
 
   def self.from_csv row
-    data = row.to_h.slice(*ATTRIBUTES)
-    Album.new(data)
+    Album.new({
+      id:     row.fetch('id'),
+      title:  row.fetch('title'),
+      media_items_count:          row.fetch('mediaItemsCount'),
+      cover_photo_media_item_id:  row.fetch('coverPhotoMediaItemId')
+    })
   end
 
   def to_csv
-    ATTRIBUTES.map{|key| self.send(key) }
+    [ id, title, media_items_count, cover_photo_media_item_id ]
+  end
+
+  def url 
+    "https://photos.google.com/lr/album/#{id}"
   end
 
   private

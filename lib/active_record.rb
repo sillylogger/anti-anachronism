@@ -9,6 +9,10 @@ module ActiveRecord
       @table ||= {}
     end
 
+    def destroy_all
+      @table = {}
+    end
+
     def all
       @table.values
     end
