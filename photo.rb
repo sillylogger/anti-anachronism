@@ -1,21 +1,28 @@
+require 'digest/sha1'
+
 class Photo < OpenStruct
   include ActiveRecord
 
   ITEMS_MAX_PAGE_SIZE = 100
 
-  CSV_HEADERS = ['id', 'filename', 'mimeType', 'cameraMake', 'cameraModel', 'creationTime', 'creationTimeFromFilename', 'diffInHours']
+  CSV_HEADERS = ['id', 'filename', 'mimeType', 'cameraMake', 'cameraModel', 'creationTime', 'creationTimeFromFilename', 'diffInHours', 'matcher']
 
   def self.fetch_all
-    pageToken = nil
+    page_token = nil
 
-    VCR.use_cassette("mediaItems-fetch", :record => :new_episodes) do
-      loop do
-        items_in_json, pageToken = fetch pageToken
+    loop do
+      short_token = page_token.present? ?
+        Digest::SHA1.hexdigest(page_token) :
+        "nil"
+
+      VCR.use_cassette("mediaItems-#{short_token}", :record => :new_episodes) do
+        items_in_json, page_token = fetch page_token
         items_in_json.each do |data|
           Photo.from_json(data).save
         end
-        break if pageToken.nil? # || all.size > 100
       end
+
+      break if page_token.nil? # || all.size > 100
     end
 
     Photo.all
@@ -44,7 +51,16 @@ class Photo < OpenStruct
   end
 
   def to_csv
-    [ id, filename, mime_type, camera_make, camera_model, creation_time, creation_time_from_filename, diff_in_hours ]
+    [ id,
+      filename,
+      mime_type,
+      camera_make,
+      camera_model,
+      creation_time,
+      creation_time_from_filename,
+      diff_in_hours,
+      from_filename_matcher
+    ]
   end
 
   def url
@@ -82,7 +98,7 @@ class Photo < OpenStruct
     @diff_in_hours ||= TimeDifference.between(creation_time, creation_time_from_filename).in_hours
   end
 
-  def creation_time_from_filename_raw
+  def from_filename_matcher
     matchers = [
       /(?:Screen Shot )?(\d{4}-\d{2}-\d{2} at \d{1,2}\.\d{2}\.\d{2})(?:-\d+)?.(?:png)/i,
       /(?:WhatsApp Image )?(\d{4}-\d{2}-\d{2} at \d{1,2}\.\d{2}\.\d{2} (?:PM|AM))(?:-\d+)?.(?:png|jpeg)/i,
@@ -100,10 +116,18 @@ class Photo < OpenStruct
     ]
 
     matchers.each do |matcher|
-      if match = matcher.match(filename)
-        $log.debug "Filename: #{filename} with #{matcher} results in #{match[1]}"
-        return match[1]
-      end
+      return matcher if matcher.match(filename)
+    end
+
+    return nil
+  end
+
+  def creation_time_from_filename_raw
+    matcher = from_filename_matcher
+
+    if matcher.present? &&
+        (match = matcher.match(filename))
+      return match[1]
     end
 
     return nil

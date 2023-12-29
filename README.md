@@ -16,6 +16,7 @@ Simply:
 - [x] Fix the mediaMetadata of one photo on Google Photos via console => **🤦 not possible** per [issue tracker](https://issuetracker.google.com/issues?q=status:open%20componentid:385336%20edit)
 - [x] Add the DateTime from filename to the CSV
 - [x] Wahhh use Selenium to automate fixing these through the Google Photos ui 🤣 🤦
+- [x] Make the VCR recording at a per-request level, not for all Albums / Photos, that way you can query new items more easily
 - [ ] Check the DateTime from filename and see that you need specs because a bunch are wrong
 - [ ] Write specs for the DateTime from filename, match the most specific regex first, otherwise truncating information like the time part of the filename
 
