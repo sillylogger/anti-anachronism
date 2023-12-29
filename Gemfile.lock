@@ -68,6 +68,7 @@ GEM
     multi_json (1.15.0)
     os (1.1.4)
     public_suffix (5.0.1)
+    regexp_parser (2.8.3)
     representable (3.2.0)
       declarative (< 0.1.0)
       trailblazer-option (>= 0.1.1, < 0.2.0)
@@ -76,6 +77,11 @@ GEM
     rexml (3.2.5)
     ruby-progressbar (1.13.0)
     ruby2_keywords (0.0.5)
+    rubyzip (2.3.2)
+    selenium-webdriver (4.16.0)
+      rexml (~> 3.2, >= 3.2.5)
+      rubyzip (>= 1.2.2, < 3.0)
+      websocket (~> 1.0)
     signet (0.17.0)
       addressable (~> 2.8)
       faraday (>= 0.17.5, < 3.a)
@@ -92,11 +98,15 @@ GEM
     uber (0.1.0)
     unicode-display_width (2.4.2)
     vcr (6.1.0)
+    watir (7.3.0)
+      regexp_parser (>= 1.2, < 3)
+      selenium-webdriver (~> 4.2)
     webmock (3.18.1)
       addressable (>= 2.8.0)
       crack (>= 0.3.2)
       hashdiff (>= 0.4.0, < 2.0.0)
     webrick (1.8.1)
+    websocket (1.2.10)
 
 PLATFORMS
   arm64-darwin-22
@@ -111,9 +121,11 @@ DEPENDENCIES
   logging
   minitest
   minitest-reporters
+  selenium-webdriver
   terminal-table
   time_difference
   vcr
+  watir
   webmock
 
 BUNDLED WITH

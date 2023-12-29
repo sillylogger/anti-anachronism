@@ -1,6 +1,8 @@
 require 'bundler'
 Bundler.require(:default)
 
+$root = File.expand_path('..', __FILE__)
+
 require 'byebug'
 require 'json'
 require 'logging'

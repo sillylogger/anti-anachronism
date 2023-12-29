@@ -20,3 +20,6 @@ gem 'webmock'
 gem 'logging'
 gem 'minitest'
 gem 'minitest-reporters'
+
+gem 'watir'
+gem 'selenium-webdriver'

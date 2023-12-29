@@ -22,4 +22,4 @@ request.body = { description: "new description from ruby!" }.to_json
 
 response = http.request(request)
 json = JSON.parse(response.body)
-puts json
+raise StandardError.new(json) if response.code != "200"
