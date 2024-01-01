@@ -26,6 +26,8 @@ require_relative 'google_api'
 require_relative 'google_api/client'
 require_relative 'google_api/read'
 require_relative 'google_api/write'
+
 require_relative 'album'
 require_relative 'photo'
+require_relative 'photo/file'
 

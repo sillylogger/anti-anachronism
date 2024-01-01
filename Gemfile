@@ -1,5 +1,7 @@
 source 'https://rubygems.org'
 
+ruby '3.2.2'
+
 gem 'activesupport'
 gem 'awesome_print'
 gem 'terminal-table'
@@ -18,8 +20,17 @@ gem 'vcr'
 gem 'webmock'
 
 gem 'logging'
-gem 'minitest'
-gem 'minitest-reporters'
 
 gem 'watir'
 gem 'selenium-webdriver'
+
+gem 'minitest'
+
+group :development do
+end
+
+group :test do
+end
+
+group :development, :test do
+end

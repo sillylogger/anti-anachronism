@@ -14,15 +14,15 @@ module ActiveRecord
     end
 
     def all
-      @table.values
+      table.values
     end
 
     def count
-      @table.values.size
+      table.values.size
     end
 
     def first
-      @table.values.first
+      table.values.first
     end
 
     def find_by_id id

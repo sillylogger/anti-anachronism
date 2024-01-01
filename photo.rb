@@ -5,7 +5,15 @@ class Photo < OpenStruct
 
   ITEMS_MAX_PAGE_SIZE = 100
 
-  CSV_HEADERS = ['id', 'filename', 'mimeType', 'cameraMake', 'cameraModel', 'creationTime', 'creationTimeFromFilename', 'diffInHours', 'matcher']
+  CSV_HEADERS = ['id',
+                 'filename',
+                 'mime type',
+                 'camera make',
+                 'camera model',
+                 'creation time',
+                 'creation time from filename',
+                 'diff (in hours)',
+                 'matcher']
 
   def self.fetch_all
     page_token = nil
@@ -50,6 +58,13 @@ class Photo < OpenStruct
     })
   end
 
+  attr_accessor :file
+
+  def initialize options={}
+    super
+    @file = Photo::File.new(filename)
+  end
+
   def to_csv
     [ id,
       filename,
@@ -57,9 +72,9 @@ class Photo < OpenStruct
       camera_make,
       camera_model,
       creation_time,
-      creation_time_from_filename,
+      file.creation_time,
       diff_in_hours,
-      from_filename_matcher
+      file.matcher
     ]
   end
 
@@ -82,55 +97,9 @@ class Photo < OpenStruct
     DateTime.parse string
   end
 
-  def creation_time_from_filename
-    string = creation_time_from_filename_raw
-    return nil if string.nil?
-
-    Time.find_zone("Jakarta").parse(string).to_datetime
-  rescue Exception => e
-    $log.error e.message
-    $log.error self
-    return nil
-  end
-
   def diff_in_hours
-    return nil if creation_time.nil? || creation_time_from_filename.nil?
-    @diff_in_hours ||= TimeDifference.between(creation_time, creation_time_from_filename).in_hours
-  end
-
-  def from_filename_matcher
-    matchers = [
-      /(?:Screen Shot )?(\d{4}-\d{2}-\d{2} at \d{1,2}\.\d{2}\.\d{2})(?:-\d+)?.(?:png)/i,
-      /(?:WhatsApp Image )?(\d{4}-\d{2}-\d{2} at \d{1,2}\.\d{2}\.\d{2} (?:PM|AM))(?:-\d+)?.(?:png|jpeg)/i,
-      /(\d{4}-\d{2}-\d{2} \d{1,2}\.\d{2}\.\d{2})(?:-\d+|-Pano)?.(?:jpg|png|mp4|dng)/i,
-      /IMG_(\d{8}_\d{6}).jpg/i,
-      /IMG-(\d{8})-WA\d+.jpe?g/i,
-      /IMG-(\d{8})-wa\d+.jpe?g/i,
-      /([12]\d{7}_\d{6})(?:[_-]\d+)?.(?:mp4|heic|jpg)/i,
-      /([12]\d{7}_\d{6})(?:_\d+)?.(?:mp4|heic)/i,
-      /([12]\d{7}_\d{6})_HDR.jpg/i,
-      /([12]\d{7}_\d{6}).jpg/i,
-      /(\d{8})-DSC_\d{4}.jpg/i,
-      /(\d{4}-\d{2}-\d{2})(?:-\d+).jpg/i,
-      # /(\d{10})-(?:\d+).jpg/i,
-    ]
-
-    matchers.each do |matcher|
-      return matcher if matcher.match(filename)
-    end
-
-    return nil
-  end
-
-  def creation_time_from_filename_raw
-    matcher = from_filename_matcher
-
-    if matcher.present? &&
-        (match = matcher.match(filename))
-      return match[1]
-    end
-
-    return nil
+    return nil if creation_time.nil? || file.creation_time.nil?
+    @diff_in_hours ||= TimeDifference.between(creation_time, file.creation_time).in_hours
   end
 
   private
