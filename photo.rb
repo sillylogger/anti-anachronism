@@ -72,9 +72,9 @@ class Photo < OpenStruct
       camera_make,
       camera_model,
       creation_time,
-      file.creation_time,
+      file.datetime,
       diff_in_hours,
-      file.matcher
+      file.datetime_matcher
     ]
   end
 
@@ -98,8 +98,8 @@ class Photo < OpenStruct
   end
 
   def diff_in_hours
-    return nil if creation_time.nil? || file.creation_time.nil?
-    @diff_in_hours ||= TimeDifference.between(creation_time, file.creation_time).in_hours
+    return nil if creation_time.nil? || file.datetime.nil?
+    @diff_in_hours ||= TimeDifference.between(creation_time, file.datetime).in_hours
   end
 
   private

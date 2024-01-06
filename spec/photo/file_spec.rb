@@ -1,4 +1,5 @@
 require "minitest/autorun"
+require "minitest/focus"
 
 require_relative File.join('..', '..', 'setup')
 
@@ -15,32 +16,57 @@ describe Photo::File do
     expect(photo.file.name).must_equal photo.filename
   end
 
-  describe "#creation_time" do 
+  it "reveals datetimes and matchers used to extract each value" do 
+    file = photo.file
+
+    expect(file.datetime).wont_be_nil
+    expect(file.datetime).must_be_close_to DateTime.new(2018, 4, 21, 12, 50, 25, '+07:00')
+    expect(file.datetime_matcher).must_equal [ "(?<date>(20|19)\\d{6})_(?<time>\\d{6})", "%Y%m%d %H%M%S" ]
+
+    expect(file.date).wont_be_nil
+    expect(file.date).must_be_close_to Date.new(2018, 4, 21)
+    expect(file.date_matcher).must_equal [ "(?<!\\d)(?<date>[2]\\d{3}[01]\\d{1}[0123]\\d{1})", "%Y%m%d" ]
+
+    expect(file.time).wont_be_nil
+    expect(file.time).must_be_close_to Time.new(2024, 1, 6, 12, 50, 25, '+07:00')
+    expect(file.time_matcher).must_equal ["(?<!\\d)(?<time>[012]\\d{1}[0-5]\\d{1}[0-5]\\d{1})(?!\\d)", "%H%M%S"]
+  end
+
+  describe "#datetime" do 
+
     it "reads from the filename" do
-      creation_time = photo.file.creation_time
-      expect(creation_time).must_be_close_to DateTime.new(2018, 4, 21, 12, 50, 25, '+07:00')
+      datetime = photo.file.datetime
+      expect(datetime).must_be_close_to DateTime.new(2018, 4, 21, 12, 50, 25, '+07:00')
     end
 
     it "manages to handle harder matches" do
       file = Photo::File.new("Screenshot_20231228_100105_Instagram.jpg")
-      expect(file.creation_time).must_be_close_to DateTime.new(2023, 12, 28, 10, 1, 5, '+07:00')
+      expect(file.datetime).must_be_close_to DateTime.new(2023, 12, 28, 10, 1, 5, '+07:00')
 
       file = Photo::File.new("20231227_115918(0).heic")
-      expect(file.creation_time).must_be_close_to DateTime.new(2023, 12, 27, 11, 59, 18, '+07:00')
+      expect(file.datetime).must_be_close_to DateTime.new(2023, 12, 27, 11, 59, 18, '+07:00')
 
       file = Photo::File.new("20231225_165510~2.jpg")
-      expect(file.creation_time).must_be_close_to DateTime.new(2023, 12, 25, 16, 55, 10, '+07:00')
+      expect(file.datetime).must_be_close_to DateTime.new(2023, 12, 25, 16, 55, 10, '+07:00')
 
       file = Photo::File.new("Screenshot_20231224_163131_Speedtest.jpg")
-      expect(file.creation_time).must_be_close_to DateTime.new(2023, 12, 24, 16, 31, 31, '+07:00')
+      expect(file.datetime).must_be_close_to DateTime.new(2023, 12, 24, 16, 31, 31, '+07:00')
 
       file = Photo::File.new("Screenshot_20231222_183930_Chess.jpg")
-      expect(file.creation_time).must_be_close_to DateTime.new(2023, 12, 22, 18, 39, 30, '+07:00')
+      expect(file.datetime).must_be_close_to DateTime.new(2023, 12, 22, 18, 39, 30, '+07:00')
     end
 
     it "can handle custom time parsing" do
       file = Photo::File.new("Photo on 25-12-23 at 10.43.jpg")
-      expect(file.creation_time).must_be_close_to DateTime.new(2023, 12, 25, 10, 43, 0, '+07:00')
+      expect(file.datetime).must_be_close_to DateTime.new(2023, 12, 25, 10, 43, 0, '+07:00')
+    end
+
+    it "can manage all the errors I get when rebuilding the csv" do
+      file = Photo::File.new("Screenshot from 2023-03-10 17-12-55.png")
+      expect(file.datetime).wont_be_nil
+
+      file = Photo::File.new("original_ddcaea57-1ec3-49b4-9a7a-ed9225448945_20230219_152720.jpg")
+      expect(file.datetime).wont_be_nil
     end
   end
 
@@ -110,22 +136,22 @@ describe Photo::File do
 
       filename = Photo::File.new sample
 
-      date_match = filename.date_patterns
+      date_match = filename.date
       if date_present
         expect(date_match).must_be_instance_of Date
       else
         expect(date_match).must_be_nil("Date Failed on #{date_match} with: #{msg}")
       end
 
-      time_match = filename.time_patterns
+      time_match = filename.time
       if time_present
         expect(time_match).must_be_instance_of Time
       else
         expect(time_match).must_be_nil("Time Failed on #{time_match} with: #{msg}")
       end
 
-      datetime_match = filename.datetime_patterns
       if date_present && time_present
+        datetime_match = filename.datetime
         expect(datetime_match).must_be_instance_of DateTime
       end
     end

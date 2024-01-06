@@ -25,6 +25,7 @@ gem 'watir'
 gem 'selenium-webdriver'
 
 gem 'minitest'
+gem 'minitest-focus'
 
 group :development do
 end

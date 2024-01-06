@@ -2,41 +2,43 @@ class Photo::File
 
   attr_accessor :name
 
+  attr_accessor :datetime_matcher,
+                :date_matcher,
+                :time_matcher
+
   def initialize name
     @name = name
   end
 
-  def creation_time
-    datetime_patterns
-  end
-
-  # try just looking for certain stubstrings
-  # Count, Date, Spacer, Time
-  def datetime_patterns
+  def datetime
     csv = [
-      [ 2871, '(?<date>[2]\d{3}-\d{2}-\d{2}) (?<time>\d{2}.\d{2}.\d{2})',                '%Y-%m-%d %H.%M.%S'],
-      [ 9763, '(?<date>[2]\d{7})_(?<time>\d{6})',                                        '%Y%m%d %H%M%S'],
-      [   88, '(?<date>[2]\d{7})-(?<time>\d{6})',                                        '%Y%m%d %H%M%S'],
-      [   -1, '(?<date>[2]\d{1}-\d{2}-\d{2}) at (?<time>\d{2}.\d{2})',                   '%d-%m-%y %H.%M'],
-      [   86, '(?<date>[2]\d{1}-\d{2}-\d{2}) at (?<time>\d{2}.\d{2}.\d{2})',             '%Y-%m-%d %H.%M.%S'],
-      [   46, '(?<date>[2]\d{1}-\d{2}-\d{2}) at (?<time>\d{2}.\d{2}.\d{2} (?:AM|PM))',   '%Y-%m-%d %H.%M.%S %p'],
-      [   43, '(?<date>[2]\d{1}-\d{2}-\d{2}) at (?<time>\d{1,2}.\d{2}.\d{2} (?:AM|PM))', '%Y-%m-%d %l.%M.%S %p'],
-      [   27, '(?<date>[2]\d{1}-\d{2}-\d{2}) (?<time>\d{2} \d{2} \d{2})',                '%Y-%m-%d %H.%M.%S'],
-      [   19, '(?<date>[2]\d{1}-\d{2}-\d{2})-(?<time>\d{2}-\d{2}-\d{2})',                '%Y-%m-%d %H-%M-%S'],
-      [   15, '(?<date>[2]\d{1}-\d{2}-\d{2})-(?<time>\d{2}-\d{2})',                      '%Y-%m-%d %H-%M'],
-      [   14, '(?<date>[2]\d{3}-\d{2}-\d{2})(?<time>\d{6})',                             '%Y-%m-%d %H%M%S'],
-      [    9, '(?<date>\d{2}-\d{2}-[2]\d{1}), (?<time>\d{1,2}\.\d{2}\.\d{2} (?:AM|PM))', '%d-%m-%Y %l.%M.%S %p'],
-      [   68, '(?<date>[2]\d{1}-\d{2}-\d{2})',                                           '%Y-%m-%d'],
-      [   32, '(?<time>\d{16})'                                                          '%s%6N'],
-      [   77, '(?<time>\d{10})',                                                         '%s'],
-      [ 1363, '(?<date>[2]\d{7})',                                                       '%Y%m%d'],
-      [   30, '(?<date>[2]\d{6,7})',                                                     '%-d%B%Y'],
-      [   14, '(?<date>\d{1,2}\.\d{1,2}\.[2]\d{3})',                                     '%-m.%-d.%y'],
+      [ 2871, '(?<date>(20|19)\d{2}-\d{2}-\d{2}) (?<time>\d{2}\.\d{2}\.\d{2})',                '%Y-%m-%d %H.%M.%S'],
+      [   -1, '(?<date>(20|19)\d{2}-\d{2}-\d{2}) (?<time>\d{2}\-\d{2}\-\d{2})',                '%Y-%m-%d %H-%M-%S'],
+      [   -1, '(?<date>\d{2}-\d{2}-\d{2}) at (?<time>\d{2}\.\d{2})',                           '%d-%m-%y %H.%M'],
+
+      [ 9763, '(?<date>(20|19)\d{6})_(?<time>\d{6})',                                          '%Y%m%d %H%M%S'],
+      [   88, '(?<date>(20|19)\d{6})-(?<time>\d{6})',                                          '%Y%m%d %H%M%S'],
+      [   86, '(?<date>(20|19)\d{2}-\d{2}-\d{2}) at (?<time>\d{2}\.\d{2}\.\d{2})',             '%Y-%m-%d %H.%M.%S'],
+      [   46, '(?<date>(20|19)\d{2}-\d{2}-\d{2}) at (?<time>\d{2}\.\d{2}\.\d{2} (?:AM|PM))',   '%Y-%m-%d %H.%M.%S %p'],
+      [   43, '(?<date>(20|19)\d{2}-\d{2}-\d{2}) at (?<time>\d{1,2}\.\d{2}\.\d{2} (?:AM|PM))', '%Y-%m-%d %l.%M.%S %p'],
+      [   27, '(?<date>(20|19)\d{2}-\d{2}-\d{2}) (?<time>\d{2}\s\d{2} \d{2})',                 '%Y-%m-%d %H.%M.%S'],
+      [   19, '(?<date>(20|19)\d{2}-\d{2}-\d{2})-(?<time>\d{2}\-\d{2}-\d{2})',                 '%Y-%m-%d %H-%M-%S'],
+      [   15, '(?<date>(20|19)\d{2}-\d{2}-\d{2})-(?<time>\d{2}\-\d{2})',                       '%Y-%m-%d %H-%M'],
+      [   14, '(?<date>(20|19)\d{2}-\d{2}-\d{2})(?<time>\d{6})',                               '%Y-%m-%d %H%M%S'],
+      [    9, '(?<date>\d{2}-\d{2}-[2]\d{1}), (?<time>\d{1,2}\.\d{2}\.\d{2} (?:AM|PM))',       '%d-%m-%Y %l.%M.%S %p'],
+      [   68, '(?<date>(20|19)\d{2}-\d{2}-\d{2})',                                             '%Y-%m-%d'],
+      [   32, '(?<time>\d{16})'                                                                '%s%6N'],
+      [   77, '(?<time>\d{10})',                                                               '%s'],
+      [ 1363, '(?<date>(20|19)\d{2}[01]\d{3})',                                                '%Y%m%d'],
+      [   30, '(?<date>(20|19)\d{5,6})',                                                       '%-d%B%Y'],
+      [   14, '(?<date>\d{1,2}\.\d{1,2}\.[2]\d{3})',                                           '%-m.%-d.%y'],
     ]
 
     csv.each do |count, regex, format|
       match = name.match Regexp.new(regex, 'i')
       next if match.nil?
+
+      format_maybe_zone = format
 
       begin 
         parts = []
@@ -45,25 +47,28 @@ class Photo::File
         if match.names.include?('time')
           parts << match[:time] 
           parts << "+0700"
-          format += " %z"
+          format_maybe_zone += " %z"
         end
 
-        parsed = DateTime.strptime(parts.join(" "), format)
+        parsed = DateTime.strptime(parts.join(" "), format_maybe_zone)
+        next if parsed.nil?
 
-        if !parsed.nil?
-          return parsed.in_time_zone("Jakarta").to_datetime
-        end
+        @datetime_matcher = [regex, format]
+
+        # TODO: is this :in_time_zone still needed with the adjustment above?
+        return parsed.in_time_zone("Jakarta").to_datetime
 
       rescue DateTime::Error
-        debugger
-        puts "fix meee"
+        # debugger
+        puts "Oh noes: #{name} cannot be parsed with #{format}."
+        next
       end
     end
 
     return nil
   end
 
-  def date_patterns
+  def date
     csv = [
       [ 11214, '(?<!\d)(?<date>[2]\d{3}[01]\d{1}[0123]\d{1})',          '%Y%m%d' ],
       [  3162, '(?<!\d)(?<date>[2]\d{3}-[01]\d{1}-[0123]\d{1})(?!\))',  '%Y-%m-%d' ],
@@ -78,20 +83,21 @@ class Photo::File
 
       begin 
         parsed = Date.strptime(match[:date], format)
-        if !parsed.nil?
-          return parsed 
-        end
+        next if parsed.nil?
+
+        @date_matcher = [regex, format]
+        return parsed 
 
       rescue Date::Error
         debugger
-        puts "fix meee"
+        puts "Oh noes."
       end
     end
 
     return nil
   end
 
-  def time_patterns
+  def time
     csv = [
       [ 9865, '(?<!\d)(?<time>[012]\d{1}[0-5]\d{1}[0-5]\d{1})(?!\d)',      '%H%M%S' ],
       [ 2957, '(?<!\d)(?<time>[012]\d{1}\.[0-5]\d{1}\.[0-5]\d{2})(?!\d)',  '%H.%M.%S' ],
@@ -110,13 +116,14 @@ class Photo::File
 
       begin 
         parsed = Time.strptime(match[:time], format)
-        if !parsed.nil?
-          return parsed 
-        end
+        next if parsed.nil?
 
-      rescue ArgumentError => e
+        @time_matcher = [regex, format]
+        return parsed 
+
+      rescue ArugmentError
         debugger
-        puts "fix meee"
+        puts "Oh noes."
       end
     end
 
