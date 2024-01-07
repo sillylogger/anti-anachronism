@@ -14,7 +14,6 @@ class Photo::File
     csv = [
       [ 2871, '(?<date>(20|19)\d{2}-\d{2}-\d{2}) (?<time>\d{2}\.\d{2}\.\d{2})',                '%Y-%m-%d %H.%M.%S'],
       [   -1, '(?<date>(20|19)\d{2}-\d{2}-\d{2}) (?<time>\d{2}\-\d{2}\-\d{2})',                '%Y-%m-%d %H-%M-%S'],
-      [   -1, '(?<date>\d{2}-\d{2}-\d{2}) at (?<time>\d{2}\.\d{2})',                           '%d-%m-%y %H.%M'],
 
       [ 9763, '(?<date>(20|19)\d{6})_(?<time>\d{6})',                                          '%Y%m%d %H%M%S'],
       [   88, '(?<date>(20|19)\d{6})-(?<time>\d{6})',                                          '%Y%m%d %H%M%S'],
@@ -24,6 +23,7 @@ class Photo::File
       [   27, '(?<date>(20|19)\d{2}-\d{2}-\d{2}) (?<time>\d{2}\s\d{2} \d{2})',                 '%Y-%m-%d %H.%M.%S'],
       [   19, '(?<date>(20|19)\d{2}-\d{2}-\d{2})-(?<time>\d{2}\-\d{2}-\d{2})',                 '%Y-%m-%d %H-%M-%S'],
       [   15, '(?<date>(20|19)\d{2}-\d{2}-\d{2})-(?<time>\d{2}\-\d{2})',                       '%Y-%m-%d %H-%M'],
+      [   -1, '(?<date>\d{2}-\d{2}-\d{2}) at (?<time>\d{2}\.\d{2})',                           '%d-%m-%y %H.%M'],
       [   14, '(?<date>(20|19)\d{2}-\d{2}-\d{2})(?<time>\d{6})',                               '%Y-%m-%d %H%M%S'],
       [    9, '(?<date>\d{2}-\d{2}-[2]\d{1}), (?<time>\d{1,2}\.\d{2}\.\d{2} (?:AM|PM))',       '%d-%m-%Y %l.%M.%S %p'],
       [   68, '(?<date>(20|19)\d{2}-\d{2}-\d{2})',                                             '%Y-%m-%d'],
@@ -51,7 +51,14 @@ class Photo::File
         end
 
         parsed = DateTime.strptime(parts.join(" "), format_maybe_zone)
-        next if parsed.nil?
+        if parsed.nil?
+          next
+        end
+
+        if parsed > Date.today || parsed < Date.civil(2000, 1, 1)
+          # puts [name, regex, format, "invalid"].join("\t")
+          next
+        end
 
         @datetime_matcher = [regex, format]
 
@@ -60,7 +67,7 @@ class Photo::File
 
       rescue DateTime::Error
         # debugger
-        puts "Oh noes: #{name} cannot be parsed with #{format}."
+        puts [name, regex, format, "invalid"].join("\t")
         next
       end
     end
@@ -72,9 +79,10 @@ class Photo::File
     csv = [
       [ 11214, '(?<!\d)(?<date>[2]\d{3}[01]\d{1}[0123]\d{1})',          '%Y%m%d' ],
       [  3162, '(?<!\d)(?<date>[2]\d{3}-[01]\d{1}-[0123]\d{1})(?!\))',  '%Y-%m-%d' ],
+      [    77, '(?<!\d)(?<date>\d{10})(?!\d)',                          '%s' ],
       [    36, '(?<!\d)(?<date>\d{2}-[01]\d{1}-[2]\d{3})',              '%d-%m-%Y' ],
       [    30, '(?<!\d)(?<date>\d{1,2}\d{2}[2]\d{3})',                  '%-d%B%Y' ],
-      [    14, '(?<!\d)(?<date>\d{1,2}\.[01]\d{1}\.[2]\d{3})',          '%-m.%-d.%y' ]
+      [    14, '(?<!\d)(?<date>\d{1,2}\.[01]\d{1}\.[2]\d{3})',          '%-m.%-d.%y' ],
     ]
 
     csv.each do |count, regex, format|
@@ -83,14 +91,22 @@ class Photo::File
 
       begin 
         parsed = Date.strptime(match[:date], format)
-        next if parsed.nil?
+        if parsed.nil?
+          next
+        end
+
+        if parsed > Date.today || parsed < Date.civil(2000, 1, 1)
+          puts [name, regex, format, "invalid"].join("\t")
+          next
+        end
 
         @date_matcher = [regex, format]
         return parsed 
 
       rescue Date::Error
-        debugger
-        puts "Oh noes."
+        #debugger
+        puts [name, regex, format, "invalid"].join("\t")
+        next
       end
     end
 
