@@ -11,8 +11,8 @@ class Photo < OpenStruct
                  'camera make',
                  'camera model',
                  'creation time',
-                 'creation time from filename',
-                 'diff (in hours)',
+                 'creation date from filename',
+                 'diff (in days)',
                  'matcher']
 
   def self.fetch_all
@@ -51,10 +51,10 @@ class Photo < OpenStruct
     Photo.new({
       id:           row.fetch('id'),
       filename:     row.fetch('filename'),
-      mime_type:    row.fetch('mimeType'),
-      camera_make:  row.fetch('cameraMake'),
-      camera_model: row.fetch('cameraModel'),
-      creation_time_raw:  row.fetch('creationTime')
+      mime_type:    row.fetch('mime type'),
+      camera_make:  row.fetch('camera make'),
+      camera_model: row.fetch('camera model'),
+      creation_time_raw:  row.fetch('creation time')
     })
   end
 
@@ -72,9 +72,9 @@ class Photo < OpenStruct
       camera_make,
       camera_model,
       creation_time,
-      file.datetime,
-      diff_in_hours,
-      file.datetime_matcher
+      file.date,
+      diff,
+      file.date_matcher
     ]
   end
 
@@ -97,9 +97,9 @@ class Photo < OpenStruct
     DateTime.parse string
   end
 
-  def diff_in_hours
-    return nil if creation_time.nil? || file.datetime.nil?
-    @diff_in_hours ||= TimeDifference.between(creation_time, file.datetime).in_hours
+  def diff
+    return nil if creation_time.nil? || file.date.nil?
+    TimeDifference.between(creation_time, file.date).in_days
   end
 
   private
@@ -125,7 +125,9 @@ class Photo < OpenStruct
 
     $log.debug "http.request #{request.uri}"
     response = http.request(request)
-    return unless response.code == '200'
+    if response.code != '200'
+      raise RuntimeException.new("Photo.fetch returned != 200")
+    end
 
     json = JSON.parse(response.body)
     return [

@@ -14,9 +14,9 @@ else
 end
 
 photos_by_diff = Photo.all.select{|p| 
-  p.diff_in_hours.present?
+  p.diff.present?
 }.sort_by{|p|
-  p.diff_in_hours
+  p.diff
 }.reverse
 
 photos_that_need_fixing = photos_by_diff.slice(0 .. 1000)
