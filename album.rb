@@ -5,16 +5,28 @@ class Album < OpenStruct # (:id, :title, :productUrl, :mediaItemsCount)
   CSV_HEADERS = ['id', 'title', 'mediaItemsCount', 'coverPhotoMediaItemId']
 
   def self.fetch_all
-    pageToken = nil
+    page_token = nil
 
-    VCR.use_cassette("albums-fetch", :record => :new_episodes) do
-      loop do
-        albums_in_json, pageToken = fetch pageToken
+    loop do
+      if page_token.nil?
+        prefix = "first-"
+        suffix = ""
+      else
+        prefix = ""
+        suffix = "-" + Digest::SHA1.hexdigest(page_token)
+      end
+
+      cassette_name = [prefix, 'albums', suffix].join
+      VCR.use_cassette(cassette_name, :record => :new_episodes) do
+        albums_in_json, page_token = fetch page_token
+        break if albums_in_json.nil?
+
         albums_in_json.each do |data|
           Album.from_json(data).save
         end
-        break if pageToken.nil?
       end
+
+      break if page_token.nil?
     end
 
     Album.all

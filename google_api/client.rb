@@ -29,7 +29,6 @@ module GoogleAPI
       client_id = Google::Auth::ClientId.from_file CONFIG.fetch(:credentials_path)
       token_store = Google::Auth::Stores::FileTokenStore.new file: CONFIG[mode].fetch(:token_path)
       @authorizer = Google::Auth::UserAuthorizer.new client_id, CONFIG[mode].fetch(:scope), token_store
-
       @credentials = @authorizer.get_credentials CONFIG.fetch(:user_id)
     end
 
@@ -57,6 +56,23 @@ module GoogleAPI
       if !@credentials.expired?
         return
       end
+
+      # TODO:
+      #   it seems like the credentials aren't expired but the token is?
+      #   there must be another way to validate the @credentials or token that prevents this error
+      #
+      # [2025-02-16 14:53:30] WARN   : Request to: https://oauth2.googleapis.com/token
+      # /Users/tommy/.gem/ruby/3.2.2/gems/signet-0.18.0/lib/signet/oauth_2/client.rb:1061:in `fetch_access_token': Authorization failed.  Server message: (Signet::AuthorizationError)
+      # {
+      #   "error": "invalid_grant",
+      #   "error_description": "Bad Request"
+      # }
+      #   from /Users/tommy/.gem/ruby/3.2.2/gems/signet-0.18.0/lib/signet/oauth_2/client.rb:1076:in `fetch_access_token!'
+      #   from /Users/tommy/.gem/ruby/3.2.2/gems/googleauth-1.9.1/lib/googleauth/signet.rb:58:in `block in fetch_access_token!'
+      #   from /Users/tommy/.gem/ruby/3.2.2/gems/googleauth-1.9.1/lib/googleauth/signet.rb:78:in `retry_with_error'
+      #   from /Users/tommy/.gem/ruby/3.2.2/gems/googleauth-1.9.1/lib/googleauth/signet.rb:57:in `fetch_access_token!'
+      #   from /Users/tommy/.gem/ruby/3.2.2/gems/signet-0.18.0/lib/signet/oauth_2/client.rb:1091:in `refresh!'
+      #   from /Users/tommy/Workspace/anti-anachronism/google_api/client.rb:60:in `refresh!'
 
       @credentials.refresh!
       raise 'Having trouble refreshing.' if @credentials.expired?

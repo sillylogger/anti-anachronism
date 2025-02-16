@@ -19,12 +19,19 @@ class Photo < OpenStruct
     page_token = nil
 
     loop do
-      short_token = page_token.present? ?
-        Digest::SHA1.hexdigest(page_token) :
-        "nil"
+      if page_token.nil?
+        prefix = "first-"
+        suffix = ""
+      else
+        prefix = ""
+        suffix = "-" + Digest::SHA1.hexdigest(page_token)
+      end
 
-      VCR.use_cassette("mediaItems-#{short_token}", :record => :new_episodes) do
+      cassette_name = [prefix, 'mediaItems', suffix].join
+      VCR.use_cassette(cassette_name, :record => :new_episodes) do
         items_in_json, page_token = fetch page_token
+        break if items_in_json.nil?
+
         items_in_json.each do |data|
           Photo.from_json(data).save
         end
@@ -104,11 +111,6 @@ class Photo < OpenStruct
 
   private
 
-  def method_missing(meth, *args)
-    # raise Exception, "no #{meth} member set yet" unless meth.to_s.end_with?('=')
-    super
-  end
-
   def self.fetch pageToken
     uri = URI("#{GoogleAPI::API_BASE_URL}/mediaItems")
 
@@ -135,4 +137,10 @@ class Photo < OpenStruct
       json['nextPageToken']
     ]
   end
+
+  # def method_missing(meth, *args)
+  #   # raise Exception, "no #{meth} member set yet" unless meth.to_s.end_with?('=')
+  #   super
+  # end
+
 end
