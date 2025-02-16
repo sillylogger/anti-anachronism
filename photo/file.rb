@@ -67,7 +67,7 @@ class Photo::File
 
       rescue DateTime::Error
         # debugger
-        puts [name, regex, format, "invalid"].join("\t")
+        # puts [name, regex, format, "invalid"].join("\t")
         next
       end
     end
@@ -96,7 +96,7 @@ class Photo::File
         end
 
         if parsed > Date.today || parsed < Date.civil(2000, 1, 1)
-          puts [name, regex, format, "invalid"].join("\t")
+          # puts [name, regex, format, "invalid"].join("\t")
           next
         end
 
@@ -105,7 +105,7 @@ class Photo::File
 
       rescue Date::Error
         #debugger
-        puts [name, regex, format, "invalid"].join("\t")
+        # puts [name, regex, format, "invalid"].join("\t")
         next
       end
     end

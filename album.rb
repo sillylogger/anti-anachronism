@@ -36,7 +36,7 @@ class Album < OpenStruct # (:id, :title, :productUrl, :mediaItemsCount)
     Album.new({
       id:     object.fetch('id'),
       title:  object.fetch('title'),
-      media_items_count:          object.fetch('mediaItemsCount'),
+      media_items_count:          object.fetch('mediaItemsCount').to_i,
       cover_photo_media_item_id:  object.fetch('coverPhotoMediaItemId')
     })
   end
@@ -45,7 +45,7 @@ class Album < OpenStruct # (:id, :title, :productUrl, :mediaItemsCount)
     Album.new({
       id:     row.fetch('id'),
       title:  row.fetch('title'),
-      media_items_count:          row.fetch('mediaItemsCount'),
+      media_items_count:          row.fetch('mediaItemsCount').to_i,
       cover_photo_media_item_id:  row.fetch('coverPhotoMediaItemId')
     })
   end
@@ -83,6 +83,11 @@ class Album < OpenStruct # (:id, :title, :productUrl, :mediaItemsCount)
       json['albums'],
       json['nextPageToken']
     ]
+  end
+
+  def method_missing(meth, *args)
+    raise Exception, "no #{meth} member set yet" unless meth.to_s.end_with?('=')
+    super
   end
 
 end

@@ -5,28 +5,27 @@ require_relative File.join('..', 'setup')
 CSVDatabase.read './data/albums.csv', Album
 CSVDatabase.read './data/photos.csv', Photo
 
-
 headers = %w(Count Title Url)
 data = Album.all.sort_by{|a|
-  a.mediaItemsCount.to_i
+  a.media_items_count
 }.reverse.map{|a|
-  [a.mediaItemsCount,
+  [a.media_items_count,
    a.title,
-   a.productUrl]
+   a.url]
 }
 table = Terminal::Table.new headings: headers, rows: data
 table.align_column 0, :right
 $log.info "\n" + table.to_s + "\n"
 
 
-photos_with_diff = Photo.all.select{|p| p.diff_in_hours.present? && p.diff_in_hours.abs > 7 }
-$log.info "There are #{photos_with_diff.size} photos with a filename vs metadata diff over 7 hours:"
+photos_with_diff = Photo.all.select{|p| p.diff.present? && p.diff.abs > 0.5 }
+$log.info "There are #{photos_with_diff.size} photos with a filename vs metadata diff over 12 hours:"
 
 stats = Hash.new{|h, k| h[k] = Hash.new(0) }
 photos_with_diff.each{|p|
-  stats['mimeType'][p.mimeType&.strip] += 1
-  stats['cameraMake'][p.mediaMetadata.dig('photo', 'cameraMake')&.strip] += 1
-  stats['cameraModel'][p.mediaMetadata.dig('photo', 'cameraModel')&.strip] += 1
+  stats['mimeType'][p.mime_type&.strip] += 1
+  stats['cameraMake'][p.camera_make&.strip] += 1
+  stats['cameraModel'][p.camera_model&.strip] += 1
 }
 
 include Stats

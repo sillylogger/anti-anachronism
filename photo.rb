@@ -138,9 +138,9 @@ class Photo < OpenStruct
     ]
   end
 
-  # def method_missing(meth, *args)
-  #   # raise Exception, "no #{meth} member set yet" unless meth.to_s.end_with?('=')
-  #   super
-  # end
+  def method_missing(meth, *args)
+    raise Exception, "no #{meth} member set yet" unless meth.to_s.end_with?('=')
+    super
+  end
 
 end
